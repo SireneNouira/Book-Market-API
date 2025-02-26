@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\BookRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use ApiPlatform\Metadata\ApiResource;
@@ -28,9 +29,9 @@ use App\DataPersister\BookDataPersister;
         ),
         new Post(
             denormalizationContext: ['groups' => ['book:write']],
-            security: "is_granted('ROLE_USER')",
+            security: "is_granted('ROLE_VENDEUR')",
             processor: BookDataPersister::class,
-            securityMessage: "Seuls les utilisateurs connectés peuvent créer des livres"
+            securityMessage: "Seuls les vendeurs connectés peuvent créer des livres"
         ),
         new Patch(
             denormalizationContext: ['groups' => ['book:write']],
@@ -52,24 +53,47 @@ class Book
     #[Groups(['book:read'])]
     private ?int $id = null;
 
-    
+
     #[ORM\Column(length: 255)]
     #[Groups(['book:read', 'book:write'])]
     private ?string $title = null;
 
+    #[ORM\ManyToMany(targetEntity: Genre::class, inversedBy: 'books')]
+    #[Groups(['book:read', 'book:write'])]
+    private Collection $genre;
+
+   
+    public function __construct()
+    {
+        $this->genre = new ArrayCollection();
+    }
+
+    #[ORM\ManyToOne(inversedBy: 'books')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
+    #[ORM\Column]
+    #[Groups(['book:read', 'book:write'])]
+    private ?int $prix = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['book:read', 'book:write'])]
+    private ?string $description = null;
+
     #[ORM\Column(length: 255)]
     #[Groups(['book:read', 'book:write'])]
-    private ?string $author = null;
+    private ?string $photo_path = null;
 
+    #[ORM\ManyToOne(targetEntity: Auteur::class,inversedBy: 'books')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['book:read', 'book:write'])]
+    private ?Auteur $auteur = null;
 
-#[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'books')]
-#[Groups(['book:read', 'book:write'])]
-private Collection $categories;
+    #[ORM\ManyToOne(targetEntity: Etat::class,inversedBy: 'books')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['book:read', 'book:write'])]
+    private ?Etat $etat = null;
 
-#[ORM\ManyToOne(inversedBy: 'books')]
-#[ORM\JoinColumn(nullable: false)]
-private ?User $user = null;
-   
     public function getId(): ?int
     {
         return $this->id;
@@ -87,17 +111,6 @@ private ?User $user = null;
         return $this;
     }
 
-    public function getAuthor(): ?string
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(string $author): static
-    {
-        $this->author = $author;
-
-        return $this;
-    }
 
     public function getUser(): ?User
     {
@@ -111,9 +124,116 @@ private ?User $user = null;
         return $this;
     }
 
-  
+    public function getPrix(): ?int
+    {
+        return $this->prix;
+    }
 
- 
+    public function setPrix(int $prix): static
+    {
+        $this->prix = $prix;
 
-   
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getPhotoPath(): ?string
+    {
+        return $this->photo_path;
+    }
+
+    public function setPhotoPath(string $photo_path): static
+    {
+        $this->photo_path = $photo_path;
+
+        return $this;
+    }
+
+    public function getAuteur(): ?Auteur
+    {
+        return $this->auteur;
+    }
+
+    public function setAuteur(?Auteur $auteur): static
+    {
+        $this->auteur = $auteur;
+
+        return $this;
+    }
+
+    public function getEtat(): ?Etat
+    {
+        return $this->etat;
+    }
+
+    public function setEtat(?Etat $etat): static
+    {
+        $this->etat = $etat;
+
+        return $this;
+    }
+
+
+     /**
+     * Get the genres associated with the book.
+     *
+     * @return Collection|Genre[]
+     */
+    public function getGenre(): Collection
+    {
+        return $this->genre;
+    }
+
+    /**
+     * Set the genres associated with the book.
+     *
+     * @param Collection|Genre[] $genre
+     * @return $this
+     */
+    public function setGenre(Collection $genre): self
+    {
+        $this->genre = $genre;
+
+        return $this;
+    }
+
+    /**
+     * Add a genre to the book.
+     *
+     * @param Genre $genre
+     * @return $this
+     */
+    public function addGenre(Genre $genre): self
+    {
+        // Prevent adding the same genre multiple times
+        if (!$this->genre->contains($genre)) {
+            $this->genre[] = $genre;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Remove a genre from the book.
+     *
+     * @param Genre $genre
+     * @return $this
+     */
+    public function removeGenre(Genre $genre): self
+    {
+        $this->genre->removeElement($genre);
+
+        return $this;
+    }
 }

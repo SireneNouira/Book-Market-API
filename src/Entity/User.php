@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\DataPersister\UserDataPersister;
 use App\Dto\RegisterUserDto;
@@ -34,7 +36,16 @@ use Symfony\Component\Security\Core\User\UserInterface;
             validationContext: ['groups' => ['Default']],
             security: "is_granted('PUBLIC_ACCESS')",
             processor: UserDataPersister::class
-        )
+        ),
+        new Patch(
+            denormalizationContext: ['groups' => ['user:write']],
+            security: "is_granted('USER_EDIT', object)",
+            securityMessage: "Vous ne pouvez modifier que vos propres nformations"
+        ),
+        new Delete(
+            security: "is_granted('User_DELETE', object)",
+            securityMessage: "Vous ne pouvez supprimer que votre compte"
+        ),
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
