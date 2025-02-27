@@ -32,13 +32,14 @@ class Auteur
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['book:read'])]
+    #[Groups(['auteur:read', 'book:read'])]
     private ?string $name = null;
 
     /**
      * @var Collection<int, Book>
      */
     #[ORM\OneToMany(targetEntity: Book::class, mappedBy: 'auteur')]
+    #[Groups(['auteur:read', 'book:read'])]
     private Collection $books;
 
     public function __construct()

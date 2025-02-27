@@ -236,4 +236,12 @@ class Book
 
         return $this;
     }
+
+    /**
+ * Retourne les IDs des genres associés au livre.
+ */
+public function getGenreIds(): array
+{
+    return array_map(fn(Genre $genre) => $genre->getId(), $this->genre->toArray());
+}
 }

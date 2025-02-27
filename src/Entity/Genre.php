@@ -38,6 +38,7 @@ class Genre
     private ?string $name = null;
 
     #[ORM\ManyToMany(targetEntity: Book::class, mappedBy: 'genre')]
+    #[Groups(['genre:read', 'book:read'])]
     private Collection $books;
     public function __construct()
     {
@@ -61,6 +62,19 @@ class Genre
         return $this;
     }
 
+
+    public function getBooks(): Collection
+{
+    return $this->books;
+}
+
+/**
+ * Retourne les IDs des livres associés au genre.
+ */
+public function getBookIds(): array
+{
+    return array_map(fn(Book $book) => $book->getId(), $this->books->toArray());
+}
     public function addBook(Book $book): self
 {
     if (!$this->books->contains($book)) {

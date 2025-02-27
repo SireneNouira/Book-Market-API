@@ -15,11 +15,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new Get(
-            normalizationContext: ['groups' => ['auteur:read']],
+            normalizationContext: ['groups' => ['etat:read']],
             security: "is_granted('PUBLIC_ACCESS')"
         ),
         new GetCollection(
-            normalizationContext: ['groups' => ['auteur:read']],
+            normalizationContext: ['groups' => ['etat:read']],
             security: "is_granted('PUBLIC_ACCESS')"
         ),
     ]
@@ -32,13 +32,14 @@ class Etat
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['book:read'])]
+    #[Groups(['etat:read', 'book:read'])]
     private ?string $name = null;
 
     /**
      * @var Collection<int, Book>
      */
     #[ORM\OneToMany(targetEntity: Book::class, mappedBy: 'etat')]
+    #[Groups(['etat:read' , 'book:read'])]
     private Collection $books;
 
     public function __construct()
