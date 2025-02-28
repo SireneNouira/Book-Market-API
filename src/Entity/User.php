@@ -46,10 +46,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
         new Patch(
             denormalizationContext: ['groups' => ['user:write']],
             security: "is_granted('USER_EDIT', object)",
-            securityMessage: "Vous ne pouvez modifier que vos propres nformations"
+            securityMessage: "Vous ne pouvez modifier que vos propres nformations",
+            processor: UserDataPersister::class
         ),
         new Delete(
-            security: "is_granted('User_DELETE', object)",
+            security: "is_granted('USER_DELETE', object)",
             securityMessage: "Vous ne pouvez supprimer que votre compte"
         ),
     ]

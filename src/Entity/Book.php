@@ -15,7 +15,9 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
 use App\DataPersister\BookDataPersister;
-
+use Symfony\Component\Serializer\Attribute\MaxDepth;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 #[ApiResource(
     operations: [
@@ -31,7 +33,8 @@ use App\DataPersister\BookDataPersister;
             denormalizationContext: ['groups' => ['book:write']],
             security: "is_granted('ROLE_VENDEUR')",
             processor: BookDataPersister::class,
-            securityMessage: "Seuls les vendeurs connectés peuvent créer des livres"
+            securityMessage: "Seuls les vendeurs connectés peuvent créer des livres",
+            inputFormats: ['multipart' => ['multipart/form-data']]
         ),
         new Patch(
             denormalizationContext: ['groups' => ['book:write']],
@@ -45,6 +48,7 @@ use App\DataPersister\BookDataPersister;
     ]
 )]
 #[Groups(['book:read'])]
+#[Vich\Uploadable]
 class Book
 {
     #[ORM\Id]
@@ -70,6 +74,7 @@ class Book
 
     #[ORM\ManyToOne(inversedBy: 'books')]
     #[ORM\JoinColumn(nullable: false)]
+    #[MaxDepth(1)]
     private ?User $user = null;
 
     #[ORM\Column]
@@ -80,9 +85,13 @@ class Book
     #[Groups(['book:read', 'book:write'])]
     private ?string $description = null;
 
+    #[Vich\UploadableField(mapping: 'book_image', fileNameProperty: 'image')]
+    #[Groups(['book:write'])]
+    private ?File $imageFile = null; // Champ temporaire pour l'upload
+
     #[ORM\Column(length: 255)]
-    #[Groups(['book:read', 'book:write'])]
-    private ?string $photo_path = null;
+    #[Groups(['book:read'])]
+    private ?string $image = null;
 
     #[ORM\ManyToOne(targetEntity: Auteur::class,inversedBy: 'books')]
     #[ORM\JoinColumn(nullable: false)]
@@ -148,18 +157,28 @@ class Book
         return $this;
     }
 
-    public function getPhotoPath(): ?string
+    public function getImage(): ?string
     {
-        return $this->photo_path;
+        return $this->image;
     }
 
-    public function setPhotoPath(string $photo_path): static
+    public function setImage(string $image): static
     {
-        $this->photo_path = $photo_path;
+        $this->image = $image;
 
         return $this;
     }
 
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile(?File $imageFile): self
+    {
+        $this->imageFile = $imageFile;
+        return $this;
+    }
     public function getAuteur(): ?Auteur
     {
         return $this->auteur;

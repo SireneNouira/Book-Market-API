@@ -24,31 +24,37 @@ class UserDataPersister implements ProcessorInterface
             throw new \InvalidArgumentException('Invalid data type');
         }
 
+        // Récupérer l'utilisateur existant si c'est une mise à jour
+        $user = $context[AbstractNormalizer::OBJECT_TO_POPULATE] ?? null;
 
-        // On choisit quelle entité créer
-        if ($data->type === 'vendeur') {
-            // Vérification que les champs nécessaires pour un vendeur sont remplis
-            if (empty($data->nomEntreprise) || empty($data->adresseEntreprise)) {
-                throw new \InvalidArgumentException('Les informations de l\'entreprise sont obligatoires pour un vendeur.');
+        // Si c'est une création, initialiser un nouvel utilisateur
+        if (!$user) {
+            if ($data->type === 'vendeur') {
+                // Vérification que les champs nécessaires pour un vendeur sont remplis
+                if (empty($data->nomEntreprise) || empty($data->adresseEntreprise)) {
+                    throw new \InvalidArgumentException('Les informations de l\'entreprise sont obligatoires pour un vendeur.');
+                }
+
+                $user = new Vendeur();
+                $user->setNomEntreprise($data->nomEntreprise);
+                $user->setAdresseEntreprise($data->adresseEntreprise);
+                $user->setRoles(array_merge(['ROLE_USER'], ['ROLE_VENDEUR']));  // Fusionner les rôles
+            } else {
+                $user = new User();
+                $user->setRoles(['ROLE_USER']);
             }
-
-            $user = new Vendeur();
-            $user->setNomEntreprise($data->nomEntreprise);
-            $user->setAdresseEntreprise($data->adresseEntreprise);
-            $user->setRoles(array_merge(['ROLE_USER'], ['ROLE_VENDEUR']));  // Fusionner les rôles
-        } else {
-            $user = new User();
-            $user->setRoles(['ROLE_USER']);
         }
 
-        // On applique les valeurs communes
+        // Mettre à jour les informations de l'utilisateur
         $user->setEmail($data->email);
         $user->setNom($data->nom);
         $user->setPrenom($data->prenom);
 
-        // Hash du mot de passe
-        $hashedPassword = $this->passwordHasher->hashPassword($user, $data->password);
-        $user->setPassword($hashedPassword);
+        // Hasher le mot de passe s'il est fourni (création ou mise à jour)
+        if ($data->password) {
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $data->password);
+            $user->setPassword($hashedPassword);
+        }
 
         // Persistance en base
         $this->entityManager->persist($user);
@@ -57,3 +63,4 @@ class UserDataPersister implements ProcessorInterface
         return $user;
     }
 }
+

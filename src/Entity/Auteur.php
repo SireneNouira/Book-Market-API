@@ -39,7 +39,7 @@ class Auteur
      * @var Collection<int, Book>
      */
     #[ORM\OneToMany(targetEntity: Book::class, mappedBy: 'auteur')]
-    #[Groups(['auteur:read', 'book:read'])]
+    #[Groups(['auteur:read'])]
     private Collection $books;
 
     public function __construct()

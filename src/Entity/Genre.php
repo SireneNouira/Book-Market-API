@@ -38,7 +38,7 @@ class Genre
     private ?string $name = null;
 
     #[ORM\ManyToMany(targetEntity: Book::class, mappedBy: 'genre')]
-    #[Groups(['genre:read', 'book:read'])]
+    #[Groups(['genre:read'])]
     private Collection $books;
     public function __construct()
     {

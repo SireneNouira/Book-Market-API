@@ -38,7 +38,22 @@
 }
 
 
-h1 {
-  color: #0080ff;
-  font-size: 2rem;
+
+.book-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
+
+.book-card {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 5px;
+  width: 200px;
+  background-color: #f9f9f9;
+
+  img{
+    width: 200px;
+  }
+}
+
