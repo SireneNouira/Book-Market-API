@@ -7,9 +7,9 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <FeaturedBooks />
+      {/* <FeaturedBooks />
       <Filter />
-      <BookList />
+      <BookList /> */}
     </>
   );
 }

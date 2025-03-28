@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary-color: #3490dc;  /* Bleu */
+  --secondary-color: #ff6347;  /* Tomate */
+  --accent-color: #f9a825;  /* Jaune */
 }
+
 
 @theme inline {
   --color-background: var(--background);
@@ -18,5 +20,7 @@
     --foreground: #ededed;
   }
 }
-
+body{
+  font-family: 'Becasime Antique', sans-serif;
+}
 
