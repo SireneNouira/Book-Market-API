@@ -1,12 +1,12 @@
-// /app/page.js
-import BookList from '../components/home/BookList';
-import FeaturedBooks from '../components/home/FeaturedBooks';
-import Header from '../components/common/Header';
-
+import AuthForm from "@/components/auth/AuthForm";
+import Header from "../components/common/Header";
+import LogoutButton from '@/components/auth/LogoutButton';
 export default function HomePage() {
   return (
     <>
       <Header />
+      <AuthForm />
+      <LogoutButton />
       {/* <FeaturedBooks />
       <Filter />
       <BookList /> */}
