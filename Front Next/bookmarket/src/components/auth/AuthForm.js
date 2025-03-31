@@ -2,7 +2,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/utils/api';
-
+import Cookies from 'js-cookie';
+import jwt_decode from 'jwt-decode';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const AuthForm = () => {
   const router = useRouter();
@@ -55,6 +58,21 @@ const AuthForm = () => {
     }));
   };
 
+  // Fonction pour configurer un cookie sécurisé
+  const setSecureCookie = (token) => {
+    // Configuration du cookie avec des options de sécurité
+    Cookies.set('auth_token', token, {
+      expires: 7, // Expire après 7 jours
+      secure: process.env.NODE_ENV === 'production', // Utilise HTTPS en production
+      sameSite: 'strict', // Protection contre les attaques CSRF
+      path: '/', // Disponible sur tout le site
+      httpOnly: false // HttpOnly ne peut pas être défini côté client, sera géré par le serveur
+    });
+  };
+
+
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -76,22 +94,29 @@ const AuthForm = () => {
         email: formData.email,
         password: formData.password
       };
-  
-      // Configuration spécifique pour chaque endpoint
+
       const config = {
         headers: {
           'Accept': isSignUp ? 'application/ld+json' : 'application/json',
           'Content-Type': isSignUp ? 'application/ld+json' : 'application/json'
         }
       };
-  
+
       const response = await api.post(endpoint, payload, config);
-  
+
       if (isSignUp) {
         setSuccessMessage('Inscription réussie ! Connectez-vous maintenant.');
         setIsSignUp(false);
       } else {
-        localStorage.setItem('token', response.data.token);
+        const token = response.data.token;
+        setSecureCookie(token);
+        
+        // Décoder le token pour obtenir les infos de base
+        const decodedToken = jwtDecode(token);
+        
+        // Stocker les infos de base dans le state ou un contexte global
+        // Vous pourriez utiliser un contexte utilisateur ici
+        
         router.push('/');
       }
     } catch (error) {
@@ -106,108 +131,126 @@ const AuthForm = () => {
   };
 
   return (
-    <div className="auth-form">
-      <h2>{isSignUp ? 'Inscription' : 'Connexion'}</h2>
+    <div className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md space-y-4">
+    <h2 className="text-2xl font-bold text-center">
+      {isSignUp ? "Inscription" : "Connexion"}
+    </h2>
 
-      {error && <div className="error-message">{error}</div>}
-      {successMessage && <div className="success-message">{successMessage}</div>}
+    {error && <div className="text-red-500 text-sm">{error}</div>}
+    {successMessage && <div className="text-green-500 text-sm">{successMessage}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-gray-700">Email</label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300"
+        />
+      </div>
 
-        <div>
-          <label>Mot de passe</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <div>
+        <label className="block text-gray-700">Mot de passe</label>
+        <input
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300"
+        />
+      </div>
 
-        {isSignUp && (
-          <>
-            <div>
-              <label>Nom</label>
-              <input
-                type="text"
-                name="nom"
-                value={formData.nom}
-                onChange={handleChange}
-                required
-              />
-            </div>
+      {isSignUp && (
+        <>
+          <div>
+            <label className="block text-gray-700">Nom</label>
+            <input
+              type="text"
+              name="nom"
+              value={formData.nom}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300"
+            />
+          </div>
 
-            <div>
-              <label>Prénom</label>
-              <input
-                type="text"
-                name="prenom"
-                value={formData.prenom}
-                onChange={handleChange}
-                required
-              />
-            </div>
+          <div>
+            <label className="block text-gray-700">Prénom</label>
+            <input
+              type="text"
+              name="prenom"
+              value={formData.prenom}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300"
+            />
+          </div>
 
-            <div>
-              <label>Type</label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleVendeurChange}
-                required
-              >
-                <option value="user">Utilisateur</option>
-                <option value="vendeur">Vendeur</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-gray-700">Type</label>
+            <select
+              name="type"
+              value={formData.type}
+              onChange={handleVendeurChange}
+              required
+              className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300"
+            >
+              <option value="user">Utilisateur</option>
+              <option value="vendeur">Vendeur</option>
+            </select>
+          </div>
 
-            {isVendeur && (
-              <>
-                <div>
-                  <label>Nom de l'entreprise</label>
-                  <input
-                    type="text"
-                    name="nomEntreprise"
-                    value={formData.nomEntreprise}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+          {isVendeur && (
+            <>
+              <div>
+                <label className="block text-gray-700">Nom de l'entreprise</label>
+                <input
+                  type="text"
+                  name="nomEntreprise"
+                  value={formData.nomEntreprise}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300"
+                />
+              </div>
 
-                <div>
-                  <label>Adresse de l'entreprise</label>
-                  <input
-                    type="text"
-                    name="adresseEntreprise"
-                    value={formData.adresseEntreprise}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </>
-            )}
-          </>
-        )}
+              <div>
+                <label className="block text-gray-700">Adresse de l'entreprise</label>
+                <input
+                  type="text"
+                  name="adresseEntreprise"
+                  value={formData.adresseEntreprise}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300"
+                />
+              </div>
+            </>
+          )}
+        </>
+      )}
 
-        <button type="submit">{isSignUp ? 'S\'inscrire' : 'Se connecter'}</button>
-      </form>
-
-      <button onClick={handleSwitchMode}>
-        {isSignUp ? 'Déjà inscrit ? Connectez-vous' : 'Pas encore inscrit ? Créez un compte'}
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-400 disabled:opacity-50"
+      >
+        {isLoading ? "Chargement..." : isSignUp ? "S'inscrire" : "Se connecter"}
       </button>
-    </div>
-  );
+    </form>
+
+    <button
+      onClick={handleSwitchMode}
+      className="w-full text-emerald-600 hover:underline text-center"
+    >
+      {isSignUp ? "Déjà inscrit ? Connectez-vous" : "Pas encore inscrit ? Créez un compte"}
+    </button>
+  </div>
+);
 };
 
 export default AuthForm;
