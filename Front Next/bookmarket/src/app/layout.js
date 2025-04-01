@@ -1,8 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
 // Importation de la police Bacasime Antique depuis Google Fonts
-import Head from 'next/head';
+import Head from "next/head";
+import { AuthProvider } from "@/components/auth/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,12 +28,16 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
         <link
-          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
           rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/boxicons@2.1.1/css/boxicons.min.css"
         />
       </Head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      > 
+         <AuthProvider >
+      {children}
+    </AuthProvider>
       </body>
     </html>
   );
