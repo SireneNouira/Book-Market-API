@@ -1,59 +1,28 @@
 'use client';
-import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
-import api from "@/utils/api";
-import { jwtDecode } from "jwt-decode";
 import { MenuIcon } from "../icons";
 import { useAuth } from "@/components/auth/AuthContext";
+import { useState, useEffect } from "react";
 
 
 function Header() {
-  const { user } = useAuth();
-  // const [user, setUser] = useState(null);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState(null);
 
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     try {
-  //       const token = Cookies.get('auth_token');
-        
-  //       if (!token) {
-  //         setLoading(false);
-  //         return;
-  //       }
+  const { user, loading } = useAuth();
+  const [hydrated, setHydrated] = useState(false);
 
-  //       // Décoder le token pour avoir les infos de base immédiatement
-  //       const decoded = jwtDecode(token);
-  //       setUser({
-  //         email: decoded.email,
-  //         prenom: decoded.prenom,
-  //         nom: decoded.nom,
-  //         type: decoded.type
-  //       });
+  useEffect(() => {
+    // Forcer le re-render une fois que le user est chargé
+    if (!loading) {
+      setHydrated(true);
+    }
+  }, [loading]);
 
-  //       // Ensuite, faire la requête pour plus de détails
-  //       const response = await api.get('/me', {
-  //         headers: {
-  //           'Authorization': `Bearer ${token}`
-  //         }
-  //       });
+ if (!hydrated) {
+  return (
+    <div className="text-center text-sm text-gray-500 p-2">Chargement...</div>
+  );
+}
 
-  //       setUser(response.data);
-  //     } catch (err) {
-  //       console.error("Erreur de récupération de l'utilisateur:", err);
-  //       setError("Impossible de charger les informations utilisateur");
-  //       // Nettoyer le token si invalide
-  //       if (err.response?.status === 401) {
-  //         Cookies.remove('auth_token');
-  //       }
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
 
-  //   fetchUser();
-  // }, []);
 
   return (
     <>
