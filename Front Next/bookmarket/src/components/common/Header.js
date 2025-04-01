@@ -4,53 +4,56 @@ import Cookies from "js-cookie";
 import api from "@/utils/api";
 import { jwtDecode } from "jwt-decode";
 import { MenuIcon } from "../icons";
+import { useAuth } from "@/components/auth/AuthContext";
+
 
 function Header() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user } = useAuth();
+  // const [user, setUser] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = Cookies.get('auth_token');
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const token = Cookies.get('auth_token');
         
-        if (!token) {
-          setLoading(false);
-          return;
-        }
+  //       if (!token) {
+  //         setLoading(false);
+  //         return;
+  //       }
 
-        // Décoder le token pour avoir les infos de base immédiatement
-        const decoded = jwtDecode(token);
-        setUser({
-          email: decoded.email,
-          prenom: decoded.prenom,
-          nom: decoded.nom,
-          type: decoded.type
-        });
+  //       // Décoder le token pour avoir les infos de base immédiatement
+  //       const decoded = jwtDecode(token);
+  //       setUser({
+  //         email: decoded.email,
+  //         prenom: decoded.prenom,
+  //         nom: decoded.nom,
+  //         type: decoded.type
+  //       });
 
-        // Ensuite, faire la requête pour plus de détails
-        const response = await api.get('/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+  //       // Ensuite, faire la requête pour plus de détails
+  //       const response = await api.get('/me', {
+  //         headers: {
+  //           'Authorization': `Bearer ${token}`
+  //         }
+  //       });
 
-        setUser(response.data);
-      } catch (err) {
-        console.error("Erreur de récupération de l'utilisateur:", err);
-        setError("Impossible de charger les informations utilisateur");
-        // Nettoyer le token si invalide
-        if (err.response?.status === 401) {
-          Cookies.remove('auth_token');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setUser(response.data);
+  //     } catch (err) {
+  //       console.error("Erreur de récupération de l'utilisateur:", err);
+  //       setError("Impossible de charger les informations utilisateur");
+  //       // Nettoyer le token si invalide
+  //       if (err.response?.status === 401) {
+  //         Cookies.remove('auth_token');
+  //       }
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchUser();
-  }, []);
+  //   fetchUser();
+  // }, []);
 
   return (
     <>
@@ -70,13 +73,9 @@ function Header() {
         </div>
 
         <div className="pr-5 w-3/12 flex justify-end">
-          {loading ? (
-            <div>Chargement...</div>
-          ) : error ? (
-            <div className="text-red-500 text-sm">{error}</div>
-          ) : user ? (
+          {user ? (
             <div className="flex items-center gap-2">
-              <span>Bonjour {user.prenom || user.email}</span>
+              {user.prenom && <span>Bonjour {user.prenom}</span>}
               {user.type === 'vendeur' && (
                 <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
                   Vendeur
@@ -84,9 +83,12 @@ function Header() {
               )}
             </div>
           ) : (
-            <a href="/login" className="text-emerald-600 hover:underline">Se connecter</a>
+            <a href="/auth" className="text-emerald-600 hover:underline">
+              Se connecter / S'inscrire
+            </a>
           )}
         </div>
+
       </header>
       <MenuIcon />
     </>

@@ -5,11 +5,7 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <AuthForm />
       <LogoutButton />
-      {/* <FeaturedBooks />
-      <Filter />
-      <BookList /> */}
     </>
   );
 }

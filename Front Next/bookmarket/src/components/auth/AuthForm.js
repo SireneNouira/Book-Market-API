@@ -6,8 +6,10 @@ import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { useAuth } from './AuthContext';
 
 const AuthForm = () => {
+  const { setUser } = useAuth();
   const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(true);
   const [isVendeur, setIsVendeur] = useState(false);
@@ -129,6 +131,26 @@ const AuthForm = () => {
       setIsLoading(false);
     }
   };
+
+
+  const handleLogin = async (credentials) => {
+    try {
+      const response = await api.post("/login", credentials);
+      const { token } = response.data;
+  
+      Cookies.set("auth_token", token, { expires: 7, secure: true, sameSite: "strict", path: "/" });
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  
+      // Récupérer les infos utilisateur et mettre à jour le contexte
+      const userResponse = await api.get("/me");
+      setUser(userResponse.data);
+  
+      router.push("/"); // Rediriger après connexion
+    } catch (error) {
+      console.error("Erreur de connexion", error);
+    }
+  };
+
 
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md space-y-4">
